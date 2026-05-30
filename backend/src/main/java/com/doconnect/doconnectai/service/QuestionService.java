@@ -1,6 +1,7 @@
 package com.doconnect.doconnectai.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,5 +46,10 @@ public class QuestionService {
         questionRepository.save(question);
 
         return "Question Created Successfully";
+    }
+
+    public List<Question> getAllQuestions() {
+
+        return questionRepository.findAll();
     }
 }
