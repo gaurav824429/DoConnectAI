@@ -7,9 +7,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.doconnect.doconnectai.dto.QuestionRequest;
+import com.doconnect.doconnectai.dto.AnswerRequest;
+import com.doconnect.doconnectai.entity.Answer;
 import com.doconnect.doconnectai.entity.Question;
 import com.doconnect.doconnectai.entity.User;
+import com.doconnect.doconnectai.repository.AnswerRepository;
 import com.doconnect.doconnectai.repository.QuestionRepository;
 import com.doconnect.doconnectai.repository.UserRepository;
 
@@ -17,13 +19,14 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class QuestionService {
+public class AnswerService {
 
+    private final AnswerRepository answerRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
 
-    public String createQuestion(
-            QuestionRequest request) {
+    public String createAnswer(
+            AnswerRequest request) {
 
         Authentication authentication =
                 SecurityContextHolder.getContext()
@@ -36,28 +39,27 @@ public class QuestionService {
                 .orElseThrow(() ->
                         new RuntimeException("User not found"));
 
-        Question question = Question.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
+        Question question = questionRepository
+                .findById(request.getQuestionId())
+                .orElseThrow(() ->
+                        new RuntimeException("Question not found"));
+
+        Answer answer = Answer.builder()
+                .content(request.getContent())
                 .createdAt(LocalDateTime.now())
                 .user(user)
+                .question(question)
                 .build();
 
-        questionRepository.save(question);
+        answerRepository.save(answer);
 
-        return "Question Created Successfully";
+        return "Answer Created Successfully";
     }
 
-    public List<Question> getAllQuestions() {
+    public List<Answer> getAnswersByQuestion(
+            Long questionId) {
 
-        return questionRepository.findAll();
-    }
-
-    public Question getQuestionById(Long id) {
-
-        return questionRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Question Not Found"));
+        return answerRepository
+                .findByQuestionId(questionId);
     }
 }
