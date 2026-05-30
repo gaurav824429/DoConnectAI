@@ -1,10 +1,12 @@
 package com.doconnect.doconnectai.service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.doconnect.doconnectai.dto.LoginRequest;
 import com.doconnect.doconnectai.dto.RegisterRequest;
 import com.doconnect.doconnectai.entity.Role;
 import com.doconnect.doconnectai.entity.User;
@@ -23,7 +25,7 @@ public class UserService {
 
     public String register(RegisterRequest request) {
 
-        if(userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail())) {
             return "Email already exists";
         }
 
@@ -38,5 +40,27 @@ public class UserService {
         userRepository.save(user);
 
         return "User Registered Successfully";
+    }
+
+    public String login(LoginRequest request) {
+
+        Optional<User> user =
+                userRepository.findByEmail(request.getEmail());
+
+        if (user.isEmpty()) {
+            return "Invalid Email or Password";
+        }
+
+        boolean matches =
+                passwordEncoder.matches(
+                        request.getPassword(),
+                        user.get().getPassword()
+                );
+
+        if (!matches) {
+            return "Invalid Email or Password";
+        }
+
+        return "Login Successful";
     }
 }

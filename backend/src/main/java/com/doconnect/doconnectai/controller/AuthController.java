@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.doconnect.doconnectai.dto.LoginRequest;
 import com.doconnect.doconnectai.dto.RegisterRequest;
 import com.doconnect.doconnectai.service.UserService;
 
@@ -23,5 +24,12 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request) {
 
         return userService.register(request);
+    }
+
+    @PostMapping("/login")
+    public String login(
+            @Valid @RequestBody LoginRequest request) {
+
+        return userService.login(request);
     }
 }
