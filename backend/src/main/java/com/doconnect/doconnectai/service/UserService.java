@@ -11,6 +11,7 @@ import com.doconnect.doconnectai.dto.RegisterRequest;
 import com.doconnect.doconnectai.entity.Role;
 import com.doconnect.doconnectai.entity.User;
 import com.doconnect.doconnectai.repository.UserRepository;
+import com.doconnect.doconnectai.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
     private final BCryptPasswordEncoder passwordEncoder =
             new BCryptPasswordEncoder();
@@ -61,6 +63,6 @@ public class UserService {
             return "Invalid Email or Password";
         }
 
-        return "Login Successful";
+        return jwtUtil.generateToken(user.get().getEmail());
     }
 }
