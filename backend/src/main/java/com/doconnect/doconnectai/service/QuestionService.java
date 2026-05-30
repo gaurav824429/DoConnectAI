@@ -2,12 +2,14 @@ package com.doconnect.doconnectai.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.doconnect.doconnectai.dto.QuestionRequest;
+import com.doconnect.doconnectai.dto.QuestionResponse;
 import com.doconnect.doconnectai.entity.Question;
 import com.doconnect.doconnectai.entity.User;
 import com.doconnect.doconnectai.repository.QuestionRepository;
@@ -48,16 +50,51 @@ public class QuestionService {
         return "Question Created Successfully";
     }
 
-    public List<Question> getAllQuestions() {
+    public List<QuestionResponse> getAllQuestions() {
 
-        return questionRepository.findAll();
+        return questionRepository.findAll()
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 
-    public Question getQuestionById(Long id) {
+    public QuestionResponse getQuestionById(Long id) {
 
-        return questionRepository.findById(id)
+        Question question = questionRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Question Not Found"));
+
+        return convertToResponse(question);
+    }
+
+    public List<QuestionResponse> getMyQuestions() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext()
+                        .getAuthentication();
+
+        String email = authentication.getName();
+
+        return questionRepository.findByUserEmail(email)
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    private QuestionResponse convertToResponse(
+            Question question) {
+
+        return QuestionResponse.builder()
+                .id(question.getId())
+                .title(question.getTitle())
+                .description(question.getDescription())
+                .author(
+                        question.getUser() != null
+                                ? question.getUser().getName()
+                                : "Unknown"
+                )
+                .createdAt(question.getCreatedAt())
+                .build();
     }
 }
